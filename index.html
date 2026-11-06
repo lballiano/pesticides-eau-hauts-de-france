@@ -1,9 +1,10 @@
+
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Carte thermique géographique · Pesticides Hauts-de-France</title>
+  <title>Geographic Heatmap · Pesticides in Hauts-de-France</title>
   <link rel="preconnect" href="https://unpkg.com" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="./src/styles.css" />
@@ -12,14 +13,16 @@
   <main class="app-shell">
     <section class="hero compact-hero">
       <div class="context-card full-context">
-        <span class="card-label">Contexte</span>
+        <span class="card-label">Context</span>
         <p>
-          Cette carte permet d’explorer les concentrations de pesticides et de métabolites dans l’eau distribuée dans les Hauts-de-France.
-          Les zones sont colorées selon le code postal associé à la commune et la concentration maximale mesurée en µg/L.
+          This map allows users to explore pesticide and metabolite concentrations in drinking water
+          distributed across Hauts-de-France. Areas are colored according to the postal code
+          associated with each municipality and the maximum measured concentration in µg/L.
         </p>
         <p class="context-note">
-          Références affichées : norme européenne de <strong>0,1 µg/L</strong> par pesticide et <strong>0,5 µg/L</strong> pour les pesticides totaux.
-          Valeur sanitaire provisoire de <strong>3 µg/L</strong> pour les métabolites pertinents.
+          Reference values displayed: European limit of <strong>0.1 µg/L</strong> per pesticide
+          and <strong>0.5 µg/L</strong> for total pesticides.
+          Provisional health-based reference value of <strong>3 µg/L</strong> for relevant metabolites.
         </p>
       </div>
     </section>
@@ -28,48 +31,51 @@
 
     <section class="panel info-panel">
       <div>
-        <h2>Comment lire la carte ?</h2>
+        <h2>How to read the map</h2>
         <p>
-          Le gris clair indique l’absence de mesure pour la combinaison sélectionnée. Plus le bleu est intense, plus la concentration est élevée.
-          Les zones dépassant la valeur de référence sont entourées. Survolez une commune pour voir le code postal associé ; cliquez pour consulter l’historique disponible du code postal.
+          Light gray indicates that no measurements are available for the selected combination.
+          The darker the blue, the higher the concentration.
+          Areas exceeding the reference value are outlined.
+          Hover over a municipality to see its associated postal code;
+          click to view the available measurement history for that postal code.
         </p>
       </div>
       <div class="legend-box">
         <div class="legend-title">Concentration µg/L</div>
         <div class="legend-gradient"></div>
-        <div class="legend-values"><span>faible</span><span id="legendMax">élevée</span></div>
+        <div class="legend-values"><span>Low</span><span id="legendMax">High</span></div>
       </div>
     </section>
 
     <section class="controls panel">
       <label>
-        Molécule
+        Molecule
         <select id="moleculeSelect"></select>
       </label>
       <label>
-        Année
+        Year
         <select id="yearSelect"></select>
       </label>
       <label>
-        Couche affichée
+        Displayed layer
         <select id="layerModeSelect">
-          <option value="measured">concentration mesurée</option>
+          <option value="measured">Measured concentration</option>
         </select>
       </label>
       <label>
-        Échelle de couleur
+        Color scale
         <select id="scaleSelect">
-          <option value="log">logarithmique</option>
-          <option value="linear">linéaire</option>
+          <option value="log">Logarithmic</option>
+          <option value="linear">Linear</option>
         </select>
       </label>
       <label class="toggle">
         <input id="thresholdToggle" type="checkbox" />
-        marquer les dépassements
+        Highlight exceedances
       </label>
       <label class="toggle">
         <input id="dataOnlyToggle" type="checkbox" />
-        afficher uniquement les zones avec données
+        Show only areas with available data
       </label>
     </section>
 
@@ -77,22 +83,22 @@
       <section class="panel map-panel">
         <div class="panel-heading">
           <div>
-            <h2 id="mapTitle">Carte thermique géographique</h2>
-            <p id="subtitle">Chargement de la carte…</p>
+            <h2 id="mapTitle">Geographic Heatmap</h2>
+            <p id="subtitle">Loading map…</p>
           </div>
-          <button id="downloadCsv" class="ghost-button">Télécharger CSV</button>
+          <button id="downloadCsv" class="ghost-button">Download CSV</button>
         </div>
         <div class="map-frame">
-          <div id="map" class="map" aria-label="Carte thermique géographique des concentrations"></div>
-          <div id="mapStatus" class="map-status">Chargement des contours communaux…</div>
+          <div id="map" class="map" aria-label="Geographic heatmap of pesticide concentrations"></div>
+          <div id="mapStatus" class="map-status">Loading municipality boundaries…</div>
         </div>
       </section>
 
       <aside class="panel side-panel">
-        <h2>Valeurs les plus élevées</h2>
+        <h2>Highest concentrations</h2>
         <div id="topList" class="top-list"></div>
         <div class="divider"></div>
-        <h2>Départements</h2>
+        <h2>Departments</h2>
         <div id="departmentChart" class="department-chart"></div>
       </aside>
     </section>
@@ -100,22 +106,25 @@
     <section class="panel ai-panel">
       <div class="panel-heading compact">
         <div>
-          <h2>Analyse IA · priorités de surveillance</h2>
-          <p id="aiSummary">Calcul d’un score explicable à partir des historiques par code postal…</p>
+          <h2>AI Analysis · Monitoring Priorities</h2>
+          <p id="aiSummary">Calculating an explainable score based on historical data by postal code…</p>
         </div>
-        <span class="trend-badge">IA locale</span>
+        <span class="trend-badge">Local AI</span>
       </div>
       <div class="ai-layout">
         <div id="aiPriorityList" class="ai-priority-list"></div>
         <div class="ai-explain-card">
-          <h3>Comment l’IA est utilisée ?</h3>
+          <h3>How is AI used?</h3>
           <p>
-            Le modèle ne remplace pas les analyses sanitaires. Il calcule dans le navigateur un score de priorité par code postal
-            à partir des concentrations passées, des dépassements, de la tendance, de la variabilité et du manque éventuel de données.
+            The model does not replace health risk assessments.
+            It calculates a monitoring priority score for each postal code directly in the browser,
+            based on historical concentrations, exceedances, trends, variability,
+            and potential gaps in the available data.
           </p>
           <p>
-            Résultat : une couche <strong>priorité IA</strong> qui aide à repérer les zones à suivre, même quand la dernière valeur mesurée
-            n’est pas la plus élevée de la carte.
+            The result is an <strong>AI priority</strong> layer that helps identify areas
+            requiring further monitoring, even when their most recent measured concentration
+            is not among the highest on the map.
           </p>
         </div>
       </div>
@@ -124,38 +133,44 @@
     <section class="panel trend-panel">
       <div class="panel-heading compact">
         <div>
-          <h2>Évolution temporelle</h2>
-          <p id="trendSummary">Analyse des tendances par année…</p>
+          <h2>Trends Over Time</h2>
+          <p id="trendSummary">Analyzing annual trends…</p>
         </div>
         <span class="trend-badge" id="trendBadge">2016–2023</span>
       </div>
       <div class="trend-layout">
-        <div id="trendChart" class="trend-chart" aria-label="Graphique d’évolution annuelle"></div>
+        <div id="trendChart" class="trend-chart" aria-label="Annual trend chart"></div>
         <div id="trendInsights" class="trend-insights"></div>
       </div>
     </section>
 
     <section class="panel methodology">
-      <h2>Technique</h2>
+      <h2>Technical Overview</h2>
       <p>
-        <strong>Stack technique :</strong> HTML5, CSS3, JavaScript natif, Leaflet.js pour la carte interactive,
-        GeoJSON pour les contours communaux, OpenStreetMap pour le fond cartographique et JSON local pour les mesures.
-        L’application est statique : aucun serveur, aucune base de données et aucune étape de build ne sont nécessaires.
+        <strong>Technology stack:</strong> HTML5, CSS3, vanilla JavaScript,
+        Leaflet.js for the interactive map, GeoJSON for municipality boundaries,
+        OpenStreetMap for the base map, and local JSON files for measurement data.
+        The application is static: no server, database, or build process is required.
       </p>
       <p>
-        <strong>Utilisation de l’IA :</strong> l’application intègre un modèle local de scoring explicable, exécuté directement dans le navigateur.
-        Il extrait des variables par code postal : concentration récente, maximum historique, fréquence des dépassements,
-        pente temporelle, volatilité et complétude des données. Ces variables sont combinées pour produire un score de
-        <strong>priorité de surveillance</strong> entre 0 et 100.
+        <strong>Use of AI:</strong> The application includes a local, explainable scoring model
+        that runs directly in the browser.
+        It extracts features for each postal code, including recent concentration,
+        historical maximum, frequency of exceedances, temporal trend,
+        variability, and data completeness.
+        These features are combined to produce a
+        <strong>monitoring priority score</strong> between 0 and 100.
       </p>
       <p>
-        Les contours communaux sont récupérés à l’ouverture via l’API publique française geo.api.gouv.fr. Chaque commune est rattachée
-        à ses codes postaux, puis croisée avec les valeurs mesurées agrégées par code postal.
+        Municipality boundaries are retrieved when the application loads
+        through the French public API geo.api.gouv.fr.
+        Each municipality is linked to its postal codes, which are then matched
+        with measured values aggregated by postal code.
       </p>
     </section>
 
     <aside id="drawer" class="drawer" aria-live="polite">
-      <button id="closeDrawer" class="close-button" aria-label="Fermer">×</button>
+      <button id="closeDrawer" class="close-button" aria-label="Close">×</button>
       <div id="drawerContent"></div>
     </aside>
   </main>
